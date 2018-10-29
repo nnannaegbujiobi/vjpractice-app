@@ -1,19 +1,29 @@
-
+run
 
 <template>
   <div class="home">
     <div>
       <h5>total tasks: {{tasks.length}}</h5>
       <div>
-    <button v-on:click="removeCompletedTasks()">Clear Completed Tasks</button>
+
   </div>
+    </div
+    <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <!-- <input v-model="taskFilter" list="text" class="form-control" placeholder="Search tasks" type="text"> -->
+          </div>
+        </div>
+    <div>
+      <li v-for="error in errors">{{error}}</li>
     </div>
     
-    <li v-for="task in tasks">{{task.id}}: {{task.text}} : {{task.complete}}
+    <!-- < --><!-- li v-for="task in tasks">{{task.id}}: {{task.text}} : {{task.complete}}
     <h3 v-on:click="toggleComplete(task)">{{task.text}}</h3>
     <h4 v-bind:clase ="{strike: !task.text}"></h4>
 
-    </li>
+
+    </li> -->
 
     <h2> Add Task:</h2>
   
@@ -25,7 +35,12 @@
 
 <p> {{newTask}}</p>
 
-  </div>
+    <div v-for="task in orderBy(filterBy(tasks, taskFilter, 'text'), sortAttribute, sortAscending)" class="col-md-4 text-center item-block" v-bind:key="task.id">
+            <h3 v-on:click="toggleBioVisible(task)">{{ task.text}}</h3>
+            <p v-bind:class="{strike: !task.bioVisible}">{{ task.bio }}</p>
+            <!-- <p><a v-on:click="deleteTask(task)" class="btn btn-primary btn-outline with-arrow">Delete <i class="icon-arrow-right"></i></a></p> -->
+      </div>
+</div>
 </template>
 
 <style>
@@ -40,12 +55,14 @@ export default {
     data: function() {
       return { 
         tasks: [],
-        newTask: {id:"",text:"",complete:true}
+        newTask: {id:"",text:"",complete:""},
+        errors: [],
+        taskFilter: ""
    
       };
     },
     created: function() {
-      axios.get("http://localhost:3000/tasks").then(function(response) {
+      axios.get("http://localhost:3000/api/tasks").then(function(response) {
         console.log(response.data);
         this.tasks = response.data;
       }.bind(this));
@@ -60,8 +77,10 @@ export default {
         axios.post("http://localhost:3000/api/tasks",params).then(function(response) {
           this.tasks.push(response.data);
           this.newTask.text = "";
-          this.newTask.complete = "";
-        }.bind(this));
+          
+        }).catch(error => {
+          this.errors = error.response.data.errors;
+        });
       }
 
 
@@ -80,9 +99,11 @@ export default {
     //       this.error = "you must enter text!";
     //     }
     },
-    toggleComplete: function(task) {
-      task.complete = !task.complete;
+    toggleBioVisible: function(task) {
+      task.bioVisible = !task.bioVisible;
     },
+
+
 
     numberOfIncompleteTasks: function() {
       var count = 0;
